@@ -46,7 +46,7 @@
             // 
             // BrowseFile
             // 
-            this.BrowseFile.Location = new System.Drawing.Point(13, 28);
+            this.BrowseFile.Location = new System.Drawing.Point(13, 32);
             this.BrowseFile.Name = "BrowseFile";
             this.BrowseFile.Size = new System.Drawing.Size(75, 23);
             this.BrowseFile.TabIndex = 1;
@@ -56,6 +56,7 @@
             // 
             // Parse_button
             // 
+            this.Parse_button.Enabled = false;
             this.Parse_button.Location = new System.Drawing.Point(12, 136);
             this.Parse_button.Name = "Parse_button";
             this.Parse_button.Size = new System.Drawing.Size(75, 23);

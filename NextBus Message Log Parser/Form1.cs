@@ -28,7 +28,13 @@ namespace NextBus_Message_Log_Parser
             if (dr == DialogResult.OK)
             {
                 path = open.FileName;
+                if (!path.EndsWith(".txt"))
+                {
+                    MessageBox.Show("Not a valid file format");
+                    return;
+                }
                 filePath_in.Text = path;
+                Parse_button.Enabled = true;
             }
         }
 
@@ -39,7 +45,7 @@ namespace NextBus_Message_Log_Parser
             FileStream fs_in = new FileStream(filePath_in.Text, FileMode.Open);
             StreamReader sr = new StreamReader(fs_in);
 
-            string filename_out = filePath_in.Text + "_parsed.csv";
+            string filename_out = filePath_in.Text;
             string line;
             string messageType, report;
             string[] message, AVLReportContents;
@@ -49,10 +55,22 @@ namespace NextBus_Message_Log_Parser
             DateTime dtm_convert = new DateTime();
             long res;
 
+            int temp = 1;
+
+            if (File.Exists(filename_out + "_parsed.csv"))
+            {
+                while (File.Exists(filename_out + "_parsed(" +  temp.ToString() + ").csv"))
+                {
+                    temp++;
+                }
+                
+                filename_out = filePath_in.Text + "_parsed(" + temp.ToString() + ").csv";                
+            }
+            
             FileStream fs_out = new FileStream(filename_out, FileMode.CreateNew);
             StreamWriter sw = new StreamWriter(fs_out);
 
-            sw.WriteLine("Device ID,Date/Time,Lat (Dec),Long (Dec),Speed,Num Sat,Lock?");
+            sw.WriteLine("Device ID,Date/Time,Lat (DMS),Long (DMS),Speed,Num Sat,Lock?");
 
             while ((line = sr.ReadLine()) != null)
             {
@@ -90,8 +108,6 @@ namespace NextBus_Message_Log_Parser
             sw.Close();
 
             filePath_out.Text = filename_out;       // Provide the path of resulting parsed file
-
-            File.Open(filename_out, FileMode.Open);
         }
 
         private DateTime FromUnixTime (long epoch)
