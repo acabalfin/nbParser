@@ -6,7 +6,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
-using System.IO;
+using System.IO;        // Used for file read/write
 
 namespace NextBus_Message_Log_Parser
 {
@@ -50,10 +50,12 @@ namespace NextBus_Message_Log_Parser
             string messageType, report;
             string[] message, AVLReportContents;
 
-            string deviceID, dtm, lat, longitude, speed, satCount, satLock;
+            string deviceID, dtm, lat, longitude, direction, speed, satCount, satLock;
 
             DateTime dtm_convert = new DateTime();
             long res;
+
+            string dir, dir1, dir2;
 
             int temp = 1;
 
@@ -66,11 +68,14 @@ namespace NextBus_Message_Log_Parser
                 
                 filename_out = filePath_in.Text + "_parsed(" + temp.ToString() + ").csv";                
             }
+
+            else
+                filename_out = filePath_in.Text + "_parsed.csv";
             
             FileStream fs_out = new FileStream(filename_out, FileMode.CreateNew);
             StreamWriter sw = new StreamWriter(fs_out);
 
-            sw.WriteLine("Device ID,Date/Time,Lat (DMS),Long (DMS),Speed,Num Sat,Lock?");
+            sw.WriteLine("Device ID,Date/Time,Lat (DMS),Long (DMS),Direction,Speed,Num Sat,Lock?");
 
             while ((line = sr.ReadLine()) != null)
             {
@@ -87,15 +92,33 @@ namespace NextBus_Message_Log_Parser
                         dtm = AVLReportContents[1];
                         lat = AVLReportContents[2];
                         longitude = AVLReportContents[3];
-                        speed = AVLReportContents[4];
-                        satCount = AVLReportContents[5];
-                        satLock = AVLReportContents[6];
+                        direction = AVLReportContents[4];
+                        speed = AVLReportContents[5];
+                        satCount = AVLReportContents[6];
+                        satLock = AVLReportContents[7];
 
                         if (long.TryParse(dtm, out res))
                             dtm_convert = FromUnixTime(res);
 
+                        dir = directionConversion(direction);
+                        
+                        // Conversion from hex string to decimal to ASCII
+                        dir1 = dir.Substring(0, 2);     // First 2 bytes represent N or S direction
+                        dir2 = dir.Substring(2, 2);     // Second 2 bytes represent E or W direction
+
+
+                        // Conversion from hex to decimal
+                        int num = Int32.Parse(dir1, System.Globalization.NumberStyles.HexNumber);
+                        int num2 = Int32.Parse(dir2, System.Globalization.NumberStyles.HexNumber);
+
+                        // Conversion from decimal to ASCII
+                        char u1 = (char) num, u2 = (char) num2;
+
+                        // Concatenate string (i.e. NW, SE, etc.)
+                        direction = u1.ToString() + u2.ToString();
+
                         sw.WriteLine(deviceID + "," + dtm_convert.ToString() + "," + lat + "," + longitude + ","
-                            + speed + "," + satCount + "," + satLock);
+                            + direction + "," + speed + "," + satCount + "," + satLock);
 
                         break;
 
@@ -112,9 +135,18 @@ namespace NextBus_Message_Log_Parser
 
         private DateTime FromUnixTime (long epoch)
         {
-            // Converts Unix Time to normal date/time
+            // Converts Unix Time (epoch) to normal date/time
             DateTime converted = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Local);
             return converted.AddSeconds(epoch);
+        }
+
+        private string directionConversion(string dir)
+        {
+            // This method converts the direction (given in base 10) to a hex number
+            int num = Convert.ToUInt16(dir);
+            string ans = Convert.ToString(num, 16);
+
+            return ans;
         }
     }
 }
