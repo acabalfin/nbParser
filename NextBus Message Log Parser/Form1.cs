@@ -34,10 +34,12 @@ namespace NextBus_Message_Log_Parser
 
         private void Parse_button_Click(object sender, EventArgs e)
         {
+            // This method will initiate the data parsing and creation of .csv file
+
             FileStream fs_in = new FileStream(filePath_in.Text, FileMode.Open);
             StreamReader sr = new StreamReader(fs_in);
 
-            string filename_out = filePath_in.Text + "_parsed.txt";
+            string filename_out = filePath_in.Text + "_parsed.csv";
             string line;
             string messageType, report;
             string[] message, AVLReportContents;
@@ -50,7 +52,7 @@ namespace NextBus_Message_Log_Parser
             FileStream fs_out = new FileStream(filename_out, FileMode.CreateNew);
             StreamWriter sw = new StreamWriter(fs_out);
 
-            sw.WriteLine("Device ID\t\tDate/Time\t\tLat (Dec)\t\tLong (Dec)\t\tSpeed\t\tNum Sat\tLock?\r\n\r\n");
+            sw.WriteLine("Device ID,Date/Time,Lat (Dec),Long (Dec),Speed,Num Sat,Lock?");
 
             while ((line = sr.ReadLine()) != null)
             {
@@ -74,8 +76,8 @@ namespace NextBus_Message_Log_Parser
                         if (long.TryParse(dtm, out res))
                             dtm_convert = FromUnixTime(res);
 
-                        sw.WriteLine(deviceID + "\t" + dtm_convert.ToString() + "\t" + lat + "\t" + longitude + "\t"
-                            + speed + "\t" + satCount + "\t" + satLock + "\r\n");
+                        sw.WriteLine(deviceID + "," + dtm_convert.ToString() + "," + lat + "," + longitude + ","
+                            + speed + "," + satCount + "," + satLock);
 
                         break;
 
@@ -88,6 +90,8 @@ namespace NextBus_Message_Log_Parser
             sw.Close();
 
             filePath_out.Text = filename_out;       // Provide the path of resulting parsed file
+
+            File.Open(filename_out, FileMode.Open);
         }
 
         private DateTime FromUnixTime (long epoch)
