@@ -92,8 +92,8 @@ namespace NextBus_Message_Log_Parser
                         dtm = AVLReportContents[1];
                         lat = AVLReportContents[2];
                         longitude = AVLReportContents[3];
-                        direction = AVLReportContents[4];
-                        speed = AVLReportContents[5];
+                        speed = AVLReportContents[4];
+                        direction = AVLReportContents[5];
                         satCount = AVLReportContents[6];
                         satLock = AVLReportContents[7];
 
