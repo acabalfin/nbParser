@@ -83,47 +83,46 @@ namespace NextBus_Message_Log_Parser
                 messageType = message[0];
                 report = message[1];
 
-                switch (messageType)
+                if (messageType == "AVLReport")
                 {
-                    case "AVLReport":
-                        AVLReportContents = report.Split('|');
+                    AVLReportContents = report.Split('|');
                         
-                        deviceID = AVLReportContents[0];
-                        dtm = AVLReportContents[1];
-                        lat = AVLReportContents[2];
-                        longitude = AVLReportContents[3];
-                        speed = AVLReportContents[4];
-                        direction = AVLReportContents[5];
-                        satCount = AVLReportContents[6];
-                        satLock = AVLReportContents[7];
+                    deviceID = AVLReportContents[0];
+                    dtm = AVLReportContents[1];
+                    lat = AVLReportContents[2];
+                    longitude = AVLReportContents[3];
+                    speed = AVLReportContents[4];
+                    direction = AVLReportContents[5];
+                    satCount = AVLReportContents[6];
+                    satLock = AVLReportContents[7];
 
-                        if (long.TryParse(dtm, out res))
-                            dtm_convert = FromUnixTime(res);
+                    if (long.TryParse(dtm, out res))
+                        dtm_convert = FromUnixTime(res);
 
-                        dir = directionConversion(direction);
+                    dir = directionConversion(direction);
                         
-                        // Conversion from hex string to decimal to ASCII
-                        dir1 = dir.Substring(0, 2);     // First 2 bytes represent N or S direction
-                        dir2 = dir.Substring(2, 2);     // Second 2 bytes represent E or W direction
+                    // Conversion from hex string to decimal to ASCII
+                    dir1 = dir.Substring(0, 2);     // First 2 bytes represent N or S direction
+                    dir2 = dir.Substring(2, 2);     // Second 2 bytes represent E or W direction
 
+                    // Conversion from hex to decimal
+                    int num = Int32.Parse(dir1, System.Globalization.NumberStyles.HexNumber);
+                    int num2 = Int32.Parse(dir2, System.Globalization.NumberStyles.HexNumber);
 
-                        // Conversion from hex to decimal
-                        int num = Int32.Parse(dir1, System.Globalization.NumberStyles.HexNumber);
-                        int num2 = Int32.Parse(dir2, System.Globalization.NumberStyles.HexNumber);
+                    // Conversion from decimal to ASCII
+                    char u1 = (char) num, u2 = (char) num2;
 
-                        // Conversion from decimal to ASCII
-                        char u1 = (char) num, u2 = (char) num2;
+                    // Concatenate string (i.e. NW, SE, etc.)
+                    direction = u1.ToString() + u2.ToString();
 
-                        // Concatenate string (i.e. NW, SE, etc.)
-                        direction = u1.ToString() + u2.ToString();
+                    // Conversion of satLock text (true or false)
+                    if (satLock == "0")
+                        satLock = "false";
+                    else
+                        satLock = "true";
 
-                        sw.WriteLine(deviceID + "," + dtm_convert.ToString() + "," + lat + "," + longitude + ","
-                            + direction + "," + speed + "," + satCount + "," + satLock);
-
-                        break;
-
-                    default:
-                        break;
+                    sw.WriteLine(deviceID + "," + dtm_convert.ToString() + "," + lat + "," + longitude + ","
+                        + direction + "," + speed + "," + satCount + "," + satLock);
                 }
             }
 
